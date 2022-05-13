@@ -1,4 +1,4 @@
-clear
+%clear
 clc
 %data
 v_T = 25*1e-3; %v_T 25 mV @ 25C
@@ -83,3 +83,13 @@ At_L1,'g--');step(At_L2,'y--');
 title('Step response before and after compensation');legend('At','At_Cph1',...
 'At_Cph2','At_Lph1','At_Lph2');
 
+%plot lab-values
+figure(4)
+%convert from V_out to A_db
+comp_trans = lab_comp(:,2) ./ 0.1;
+db_comp = mag2db(comp_trans);
+nocomp_trans = lab_nocomp(:,2) ./ 0.1;
+db_nocomp = mag2db(nocomp_trans);
+
+semilogx(lab_comp(:,1), db_comp); hold on; semilogx(lab_nocomp(:,1), db_nocomp)
+xlim([100 1*1e6])
