@@ -1,5 +1,6 @@
 %clear
 clc
+ws = warning('off','all');  % Turn off warning
 %data
 v_T = 25*1e-3; %v_T 25 mV @ 25C
 %specification
@@ -67,29 +68,93 @@ delta_L2 = 1 + ((R2 + (R1*R_s/(R1+R_s)))/R_L);
 ABs_L2 = AB0*(1 - s/N) / ((1 - s/(delta_L1*N)) * ((1 - s/p1)*(1 - s/p2)));
 At_L2 = A_ti_ph * -ABs_L2 / (1 - ABs_L2);
 
-%plot figures
+%plot MATLAB-simulation figures
 figure(1);bode((-1).*ABs,'b',(-1).*ABs_C1,'k--',(-1).*ABs_C2,'r--',(-1).*...
     ABs_L1,'g--',(-1).*ABs_L2,'y--');
-title('Loop Gain before and after Phantom Zero'); legend('Aβ(s)','Aβ_Cph1(s)',...
+title('Slingförstärkning, Aβ(s), före och efter fantomnollor'); legend('Aβ(s)','Aβ_Cph1(s)',...
     'Aβ_Cph2(s)','Aβ_Lph1(s)','Aβ_Lph2(s)','Location','Best')
 
 figure(2);bode(A_t,'b',At_C1,'k--',At_C2,'r--',At_L1,'g--',At_L2,'y--');...
 hold on;
-title('Open loop gain, At'); legend('At','At_Cph1','At_Cph2','At_Lph1'...
+title('Förstärkning, At, före och efter fantomnollor'); legend('At','At_Cph1','At_Cph2','At_Lph1'...
 ,'At_Lph2','Location','Best')
 
 figure(3); step(A_t,'b');hold on;step(At_C1,'k--'); step(At_C2,'r--');step(...
 At_L1,'g--');step(At_L2,'y--');
-title('Step response before and after compensation');legend('At','At_Cph1',...
+title('Stegsvar före och efter fantomnollor');legend('At','At_Cph1',...
 'At_Cph2','At_Lph1','At_Lph2');
 
-%plot lab-values
+%% plot lab-values
 figure(4)
+sgtitle('Mätresultat för At(s)')
 %convert from V_out to A_db
-comp_trans = lab_comp(:,2) ./ 0.1;
+comp_trans = lab_comp(:,2) ./ 0.1; %100 mV V_in
 db_comp = mag2db(comp_trans);
 nocomp_trans = lab_nocomp(:,2) ./ 0.1;
 db_nocomp = mag2db(nocomp_trans);
 
-semilogx(lab_comp(:,1), db_comp); hold on; semilogx(lab_nocomp(:,1), db_nocomp)
-xlim([100 1*1e6])
+%plot amplitude
+subplot(2,2,1)
+semilogx((2*pi) .* lab_comp(:,1), db_comp, 'b');
+xlim([630 1*1e7])
+title('Uppmätt överföringsfunktion i den kompenserade kretsen')
+
+subplot(2,2,2)
+semilogx((2*pi) .* lab_nocomp(:,1), db_nocomp, '-r')
+xlim([630 1*1e7])
+title('Uppmätt överföringsfunktion i den okompenserade kretsen')
+
+
+%plot phase
+subplot(2,2,3)
+phase_comp = 360 .* 1*1e-6 .* phase(:,1) .* phase(:,2);
+semilogx((2*pi) .* phase(:,1), -phase_comp, 'b.')
+hold on
+
+poly_c = polyfit(phase(:,1), -phase_comp, 8);
+y_c = polyval(poly_c, phase(:,1));
+semilogx((2*pi) .* phase(:,1), y_c, '-b')
+xlim([0 1*1e6])
+title('Uppmätt fasfunktion i den kompenserade kretsen')
+
+
+subplot(2,2,4)
+phase_nocomp = 360 .* 1*1e-6 .* phase(:,1) .* phase(:,3);
+semilogx((2*pi) .* phase(:,1), -phase_nocomp,'r.')
+hold on
+
+poly_nc = polyfit(phase(:,1), -phase_nocomp, 8);
+y_nc = polyval(poly_nc, phase(:,1));
+semilogx((2*pi) .* phase(:,1), y_nc, '-r')
+xlim([0 1*1e6])
+title('Uppmätt fasfunktion i den okompenserade kretsen')
+
+%plot step responses
+figure(5)
+plot(sr_nocomp(:,1), sr_nocomp(:,2), '-r')
+title('Uppmätt stegsvar i den okompenserade kretsen')
+figure(6)
+plot(sr_comp(:,1), sr_comp(:,2), '-b')
+title('Uppmätt stegsvar i den kompenserade kretsen')
+%% plot LTspice-sim figures
+figure(7)
+sgtitle('Simuleringsresultat från LTspice')
+hold on
+%compensated dB
+subplot(2,2,1)
+semilogx(ltspice_comp(:,1), ltspice_comp(:,2), '-b')
+xlim([0 1e6])
+title('Överföringsfunktion (kompenserad krets)')
+%compensated phase
+subplot(2,2,3)
+semilogx(ltspice_comp(:,1), ltspice_comp(:,3), '-b')
+title('Fasfunktion (kompenserad krets)')
+%uncompensated dB
+subplot(2,2,2)
+semilogx(ltspice_nocomp(:,1), ltspice_nocomp(:,2), '-r')
+xlim([0 1e6])
+title('Överföringsfunktion (okompenserad krets)')
+%uncompensated phase
+subplot(2,2,4)
+semilogx(ltspice_nocomp(:,1), ltspice_nocomp(:,3), '-r')
+title('Fasfunktion (okompenserad krets)')
