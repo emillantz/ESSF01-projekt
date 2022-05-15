@@ -85,28 +85,23 @@ title('Stegsvar före och efter fantomnollor');legend('At','At_Cph1',...
 'At_Cph2','At_Lph1','At_Lph2');
 
 %% plot lab-values
-figure(4)
-sgtitle('Mätresultat för At(s)')
+%sgtitle('Mätresultat för At(s)')
 %convert from V_out to A_db
 comp_trans = lab_comp(:,2) ./ 0.1; %100 mV V_in
 db_comp = mag2db(comp_trans);
 nocomp_trans = lab_nocomp(:,2) ./ 0.1;
 db_nocomp = mag2db(nocomp_trans);
 
+
+figure(4)
 %plot amplitude
-subplot(2,2,1)
+subplot(2,1,1)
 semilogx((2*pi) .* lab_comp(:,1), db_comp, 'b');
 xlim([630 1*1e7])
-title('Uppmätt överföringsfunktion i den kompenserade kretsen')
-
-subplot(2,2,2)
-semilogx((2*pi) .* lab_nocomp(:,1), db_nocomp, '-r')
-xlim([630 1*1e7])
-title('Uppmätt överföringsfunktion i den okompenserade kretsen')
-
+title('Uppmätt överföringsfunktion i den kompenserade kretsen'); xlabel('Frekvens (rad/s)'); ylabel('A (dB)')
 
 %plot phase
-subplot(2,2,3)
+subplot(2,1,2)
 phase_comp = 360 .* 1*1e-6 .* phase(:,1) .* phase(:,2);
 semilogx((2*pi) .* phase(:,1), -phase_comp, 'b.')
 hold on
@@ -115,10 +110,16 @@ poly_c = polyfit(phase(:,1), -phase_comp, 8);
 y_c = polyval(poly_c, phase(:,1));
 semilogx((2*pi) .* phase(:,1), y_c, '-b')
 xlim([0 1*1e6])
-title('Uppmätt fasfunktion i den kompenserade kretsen')
+title('Uppmätt fasfunktion i den kompenserade kretsen'); xlabel('Frekvens (rad/s)'); ylabel('Fas (deg)')
 
 
-subplot(2,2,4)
+figure(5)
+subplot(2,1,1)
+semilogx((2*pi) .* lab_nocomp(:,1), db_nocomp, '-r')
+xlim([630 1*1e7])
+title('Uppmätt överföringsfunktion i den okompenserade kretsen'); xlabel('Frekvens (rad/s)'); ylabel('A (dB)')
+
+subplot(2,1,2)
 phase_nocomp = 360 .* 1*1e-6 .* phase(:,1) .* phase(:,3);
 semilogx((2*pi) .* phase(:,1), -phase_nocomp,'r.')
 hold on
@@ -127,34 +128,43 @@ poly_nc = polyfit(phase(:,1), -phase_nocomp, 8);
 y_nc = polyval(poly_nc, phase(:,1));
 semilogx((2*pi) .* phase(:,1), y_nc, '-r')
 xlim([0 1*1e6])
-title('Uppmätt fasfunktion i den okompenserade kretsen')
+title('Uppmätt fasfunktion i den okompenserade kretsen'); xlabel('Frekvens (rad/s)'); ylabel('Fas (deg)')
 
 %plot step responses
-figure(5)
-plot(sr_nocomp(:,1), sr_nocomp(:,2), '-r')
-title('Uppmätt stegsvar i den okompenserade kretsen')
 figure(6)
-plot(sr_comp(:,1), sr_comp(:,2), '-b')
-title('Uppmätt stegsvar i den kompenserade kretsen')
-%% plot LTspice-sim figures
+plot(sr_nocomp(:,1), sr_nocomp(:,2), '-r')
+title('Uppmätt stegsvar i den okompenserade kretsen'); xlabel('tid (s)'); ylabel('V_{ut} (V)')
+
 figure(7)
-sgtitle('Simuleringsresultat från LTspice')
+plot(sr_comp(:,1), sr_comp(:,2), '-b')
+title('Uppmätt stegsvar i den kompenserade kretsen'); xlabel('tid (s)'); ylabel('V_{ut} (V)')
+
+
+%% plot LTspice-sim figures
+figure(8)
+sgtitle('Simuleringsresultat från LTspice (kompenserad krets)')
 hold on
 %compensated dB
-subplot(2,2,1)
+subplot(2,1,1)
 semilogx(ltspice_comp(:,1), ltspice_comp(:,2), '-b')
 xlim([0 1e6])
-title('Överföringsfunktion (kompenserad krets)')
+title('Överföringsfunktion'); xlabel('Frekvens (rad/s)'); ylabel('A (dB)')
 %compensated phase
-subplot(2,2,3)
+subplot(2,1,2)
 semilogx(ltspice_comp(:,1), ltspice_comp(:,3), '-b')
-title('Fasfunktion (kompenserad krets)')
+title('Fasfunktion'); xlabel('Frekvens (rad/s)'); ylabel('Fas (deg)')
+%xlim([0 2.6*1e4])
+
+figure(9)
+sgtitle('Simuleringsresultat från LTspice (okompenserad krets)')
+hold on
 %uncompensated dB
-subplot(2,2,2)
+subplot(2,1,1)
 semilogx(ltspice_nocomp(:,1), ltspice_nocomp(:,2), '-r')
 xlim([0 1e6])
-title('Överföringsfunktion (okompenserad krets)')
+title('Överföringsfunktion'); xlabel('Frekvens (rad/s)'); ylabel('A (dB)')
 %uncompensated phase
-subplot(2,2,4)
+subplot(2,1,2)
 semilogx(ltspice_nocomp(:,1), ltspice_nocomp(:,3), '-r')
-title('Fasfunktion (okompenserad krets)')
+title('Fasfunktion'); xlabel('Frekvens (rad/s)'); ylabel('Fas (deg)')
+%xlim([0 8*1e4])
